@@ -1,0 +1,556 @@
+-- Users Table
+CREATE TABLE users (
+    UserId INT PRIMARY KEY,
+    Username VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) NOT NULL UNIQUE,
+    Password VARCHAR(100) NOT NULL,
+    SubscriptionType VARCHAR(20) NOT NULL,
+    RegistrationDate DATE NOT NULL
+);
+
+select * from users;
+SELECT Username
+FROM Users
+WHERE RegistrationDate BETWEEN '2020-01-01' AND '2023-12-31';
+
+
+-- Genres Table
+CREATE TABLE Genres (
+    GenreID INT PRIMARY KEY,
+    GenreName VARCHAR(50) NOT NULL
+);
+
+-- Artists Table
+CREATE TABLE Artists (
+    ArtistID INT PRIMARY KEY,
+    ArtistName VARCHAR(100) NOT NULL,
+    Country VARCHAR(50),
+    GenreID INT REFERENCES Genres(GenreID)
+);
+
+select * from artists;
+SELECT ArtistName FROM Artists ORDER BY ArtistName DESC;
+SELECT artistname FROM Artists WHERE country = 'USA';
+
+SELECT ArtistName
+FROM Artists
+WHERE ArtistName LIKE 'D%';
+
+
+-- Albums table
+CREATE TABLE Albums (
+    AlbumID INT PRIMARY KEY,
+    AlbumName VARCHAR(100) NOT NULL,
+    ArtistID INT REFERENCES Artists(ArtistID),
+    ReleaseYear INT NOT NULL,
+    CoverImagePath VARCHAR(255)
+);
+
+-- Songs table
+CREATE TABLE Songs (
+    SongID INT PRIMARY KEY,
+    Title VARCHAR(100) NOT NULL,
+    ArtistID INT REFERENCES Artists(ArtistID),
+    AlbumID INT REFERENCES Albums(AlbumID),
+    GenreID INT REFERENCES Genres(GenreID),
+    Duration TIME NOT NULL,
+    ReleaseDate DATE NOT NULL,
+    Language VARCHAR(50),
+    FilePath VARCHAR(255)
+);
+
+select * from songs;
+SELECT title FROM Songs WHERE ReleaseDate > '2020-01-01';
+
+-- Playlists table
+CREATE TABLE Playlists (
+    PlaylistID INT PRIMARY KEY,
+    PlaylistName VARCHAR(100) NOT NULL,
+    UserID INT REFERENCES Users(UserID),
+    DateCreated DATE NOT NULL 
+);
+
+-- Playlist_Songs (Mapping Table)
+CREATE TABLE Playlist_Songs (
+    PlaylistID INT REFERENCES Playlists(PlaylistID),
+    SongID INT REFERENCES Songs(SongID),
+    PRIMARY KEY (PlaylistID, SongID)
+);
+
+-- User_Playlist (Mapping Table)
+CREATE TABLE User_Playlist (
+    UserID INT REFERENCES Users(UserID),
+    PlaylistID INT REFERENCES Playlists(PlaylistID),
+    PRIMARY KEY (UserID, PlaylistID)
+);
+
+-- Favorites table
+CREATE TABLE Favorites (
+    UserID INT REFERENCES Users(UserID),
+    SongID INT REFERENCES Songs(SongID),
+    DateAdded DATE NOT NULL,
+    PRIMARY KEY (UserID, SongID)  -- Composite primary key
+);
+
+select * from favorites;
+
+-- ListeningHistory Table
+CREATE TABLE ListeningHistory (
+    UserID INT REFERENCES Users(UserID),
+    SongID INT REFERENCES Songs(SongID),
+    ListenDate TIMESTAMP NOT NULL,
+    PRIMARY KEY (UserID, SongID, ListenDate)  -- Composite primary key
+);
+
+-- Reviews Table
+CREATE TABLE Reviews (
+    UserID INT REFERENCES Users(UserID),
+    SongID INT REFERENCES Songs(SongID),
+    Rating INT CHECK (Rating BETWEEN 1 AND 5),
+    ReviewText TEXT,
+    ReviewDate TIMESTAMP NOT NULL,
+    PRIMARY KEY (UserID, SongID, ReviewDate)  -- Composite primary key
+);
+
+select * from reviews;
+
+INSERT INTO Users (UserID,Username, Email, Password, SubscriptionType, RegistrationDate) VALUES
+(101,'john_doe', 'john@example.com', 'password123', 'Premium', '2022-01-10'),
+(102,'jane_doe', 'jane@example.com', 'password456', 'Free', '2023-03-15'),
+(103,'mike_smith', 'mike@example.com', 'password789', 'Premium', '2023-05-22'),
+(104,'lucy_liu', 'lucy@example.com', 'passwordabc', 'Free', '2022-08-19'),
+(105,'emma_watson', 'emma@example.com', 'passwordxyz', 'Premium', '2024-01-05'),
+(106,'jack_black', 'jack@example.com', 'passworddef', 'Free', '2024-07-12');
+
+INSERT INTO Genres (GenreID,GenreName) VALUES
+(201,'Pop'),
+(202,'Rock'),
+(203,'Jazz'),
+(204,'Hip-Hop'),
+(205,'Classical'),
+(206,'Electronic'),
+(207,'Country'),
+(208,'R&B'),
+(209,'Reggae'),
+(210,'Metal'),
+(211,'Blues'),
+(212,'Folk');
+
+INSERT INTO Artists (ArtistID, ArtistName, Country, GenreID) VALUES
+(301, 'The Weeknd', 'Canada', 201),
+(302, 'Glass Animals', 'UK', 206),
+(303, 'Hozier', 'Ireland', 202),
+(304, 'Billie Eilish', 'USA', 201),
+(305, 'Dua Lipa', 'UK', 201),
+(306, 'Kendrick Lamar', 'USA', 204),
+(307, 'Miles Davis', 'USA', 203),
+(308, 'Ludwig van Beethoven', 'Germany', 205),
+(309, 'Taylor Swift', 'USA', 201),
+(310, 'Drake', 'Canada', 204),
+(311, 'John Coltrane', 'USA', 203),
+(312, 'Wolfgang Amadeus Mozart', 'Austria', 205);
+
+INSERT INTO Albums (AlbumID, AlbumName, ArtistID, ReleaseYear, CoverImagePath) VALUES
+(401, 'Starboy', 301, 2016, '/images/starboy_cover.png'),
+(402, 'Dreamland', 302, 2020, '/images/dreamland_cover.webp'),
+(403, 'Hozier', 303, 2014, '/images/hozier_cover.gif'),
+(404, 'Don''t Smile at Me', 304, 2017, '/images/dontsmileatme_cover.jpg'),
+(405, 'Future Nostalgia', 305, 2020, '/images/futurenostalgia_cover.png'),
+(406, 'DAMN.', 306, 2017, '/images/damn_cover.jpg'),
+(407, 'Kind of Blue', 307, 1959, '/images/kindofblue_cover.gif'),
+(408, 'Beethoven''s Works', 308, 1810, '/images/beethoven_cover.webp'),
+(409, '1989', 309, 2014, '/images/1989_cover.png'),
+(410, 'Views', 310, 2016, '/images/views_cover.jpg'),
+(411, 'A Love Supreme', 311, 1965, '/images/alovesupreme_cover.webp'),
+(412, 'Mozart’s Symphonies', 312, 1788, '/images/mozart_cover.gif');
+
+INSERT INTO Songs (SongID, Title, ArtistID, AlbumID, GenreID, Duration, ReleaseDate, Language, FilePath) VALUES
+(501, 'I Feel It Coming', 301, 401, 210, '00:04:29', '2016-11-18', 'English', '/music/ifeelitcoming.aac'),
+(502, 'Die For You', 301, 401, 210, '00:04:20', '2016-11-25', 'English', '/music/dieforyou.flac'),
+(503, 'Call Out My Name', 301, 401, 210, '00:03:48', '2018-03-30', 'English', '/music/calloutmyname.mp3'),
+
+(504, 'Tangerine', 302, 402, 206, '00:03:24', '2020-06-25', 'English', '/music/tangerine.wav'),
+(505, 'Your Love (Déjà Vu)', 302, 402, 206, '00:03:12', '2020-03-12', 'English', '/music/yourlove.mp3'),
+(506, 'Space Ghost Coast to Coast', 302, 402, 206, '00:03:06', '2020-06-30', 'English', '/music/spaceghost.aac'),
+
+(507, 'Cherry Wine', 303, 403, 202, '00:04:00', '2014-10-03', 'English', '/music/cherrywine.flac'),
+(508, 'Someone New', 303, 403, 202, '00:03:42', '2015-02-16', 'English', '/music/someonenew.wav'),
+(509, 'Work Song', 303, 403, 202, '00:03:49', '2014-12-15', 'English', '/music/worksong.mp3'),
+
+(510, 'Everything I Wanted', 304, 404, 210, '00:04:05', '2019-11-13', 'English', '/music/everythingiwanted.flac'),
+(511, 'Ocean Eyes', 304, 404, 210, '00:03:20', '2016-11-18', 'English', '/music/oceaneyes.aac'),
+(512, 'Bury a Friend', 304, 404, 210, '00:03:13', '2019-01-30', 'English', '/music/buryafriend.mp3'),
+
+(513, 'Levitating', 305, 405, 210, '00:03:23', '2020-10-02', 'English', '/music/levitating.flac'),
+(514, 'Physical', 305, 405, 210, '00:03:14', '2020-01-31', 'English', '/music/physical.wav'),
+(515, 'Break My Heart', 305, 405, 210, '00:03:41', '2020-03-25', 'English', '/music/breakmyheart.aac'),
+
+(516, 'DNA.', 306, 406, 204, '00:03:06', '2017-04-14', 'English', '/music/dna.mp3'),
+(517, 'Alright', 306, 406, 204, '00:03:39', '2015-06-30', 'English', '/music/alright.flac'),
+(518, 'Loyalty.', 306, 406, 204, '00:03:47', '2017-04-14', 'English', '/music/loyalty.wav'),
+
+(519, 'Blank Space', 309, 409, 210, '00:03:52', '2014-10-27', 'English', '/music/blankspace.aac'),
+(520, 'Wildest Dreams', 309, 409, 210, '00:03:40', '2014-10-27', 'English', '/music/wildestdreams.mp3'),
+(521, 'Style', 309, 409, 210, '00:03:51', '2014-10-27', 'English', '/music/style.flac'),
+
+(522, 'In My Feelings', 310, 410, 204, '00:03:37', '2018-06-29', 'English', '/music/inmyfeelings.wav'),
+(523, 'One Dance', 310, 410, 204, '00:02:54', '2016-04-05', 'English', '/music/onedance.aac'),
+(524, 'Hotline Bling', 310, 410, 204, '00:04:27', '2015-07-31', 'English', '/music/hotlinebling.mp3'),
+
+(525, 'Save Your Tears', 301, 401, 210, '00:03:35', '2020-08-09', 'English', '/music/saveyourtears.flac'),
+(526, 'Blinding Lights', 301, 401, 210, '00:03:20', '2019-11-29', 'English', '/music/blindinglights.aac'),
+(527, 'Heat Waves', 302, 402, 206, '00:03:58', '2020-12-16', 'English', '/music/heatwaves.mp3'),
+
+(528, 'Movement', 303, 403, 202, '00:03:44', '2019-11-01', 'English', '/music/movement.wav'),
+(529, 'Almost (Sweet Music)', 303, 403, 202, '00:03:19', '2019-12-06', 'English', '/music/almostsweetmusic.flac'),
+(530, 'Kings & Queens', 305, 405, 210, '00:02:58', '2020-03-27', 'English', '/music/kingsandqueens.aac');
+select * from songs;
+
+INSERT INTO Playlists (PlaylistID, PlaylistName, UserID, DateCreated) VALUES
+(601, 'Chill Vibes', 103, '2024-10-01'),
+(602, 'Workout Hits', 105, '2024-09-25'),
+(603, 'Jazz Classics', 102, '2024-09-20'),
+(604, 'Morning Motivation', 101, '2024-10-02'),
+(605, 'Road Trip Anthems', 104, '2024-10-03'),
+(606, 'Throwback Hits', 102, '2024-10-04'),
+(607, 'Party Mix', 103, '2024-10-05'),
+(608, 'Relaxing Sounds', 105, '2024-10-06'),
+(609, 'Chill Beats', 101, '2024-10-07'),
+(610, 'Epic Movie Soundtracks', 104, '2024-10-08');
+
+INSERT INTO Playlist_Songs (PlaylistID, SongID) VALUES
+(601, 501),  -- Chill Vibes
+(601, 505),  -- Chill Vibes
+(601, 516),  -- Chill Vibes
+(602, 511),  -- Workout Hits
+(602, 520),  -- Workout Hits
+(602, 505),  -- Workout Hits
+(603, 502),  -- Jazz Classics
+(603, 513),  -- Jazz Classics
+(603, 519),  -- Jazz Classics
+(604, 507),  -- Morning Motivation
+(604, 514),  -- Morning Motivation
+(604, 521),  -- Morning Motivation
+(605, 510),  -- Road Trip Anthems
+(605, 512),  -- Road Trip Anthems
+(605, 525);  -- Road Trip Anthems
+
+INSERT INTO User_Playlist (UserID, PlaylistID) VALUES
+(101, 606),  -- User 1 to Road Trip Anthems
+(102, 607),  -- User 2 to Party Mix
+(103, 608),  -- User 3 to Relaxing Sounds
+(104, 609),  -- User 4 to Chill Beats
+(105, 610),  -- User 5 to Epic Movie Soundtracks
+(106, 601),  -- User 6 to Chill Vibes
+(101, 602),  -- User 1 to Workout Hits
+(102, 603),  -- User 2 to Jazz Classics
+(104, 604),  -- User 4 to Morning Motivation
+(106, 605),  -- User 6 to Classical Greats
+(101, 601),  -- User 1 to Chill Vibes
+(102, 602),  -- User 2 to Workout Hits
+(103, 603),  -- User 3 to Study Sessions
+(104, 605),  -- User 4 to Classical Greats
+(105, 604);  -- User 5 to Road Trip Anthems
+
+INSERT INTO Favorites (UserID, SongID, DateAdded) VALUES
+(101, 511, '2024-10-22'),  -- User 1
+(102, 512, '2024-10-23'),  -- User 2
+(103, 513, '2024-10-24'),  -- User 3
+(104, 514, '2024-10-25'),  -- User 4
+(105, 515, '2024-10-26'),  -- User 5
+(106, 516, '2024-10-27'),  -- User 6
+(101, 517, '2024-10-28'),  -- User 1
+(102, 518, '2024-10-29'),  -- User 2
+(104, 519, '2024-10-30'),  -- User 4
+(105, 520, '2024-10-31'),  -- User 5
+(101, 501, '2024-10-12'),  -- User 1
+(102, 502, '2024-10-13'),  -- User 2
+(103, 503, '2024-10-14'),  -- User 3
+(104, 504, '2024-10-15'),  -- User 4
+(105, 505, '2024-10-16'),  -- User 5
+(106, 506, '2024-10-17'),  -- User 6
+(101, 507, '2024-10-18'),  -- User 1
+(102, 508, '2024-10-19'),  -- User 2
+(103, 509, '2024-10-20'),  -- User 3
+(104, 510, '2024-10-21');  -- User 4
+
+
+INSERT INTO ListeningHistory (UserID, SongID, ListenDate) VALUES
+(101, 501, '2024-10-10'),
+(101, 502, '2024-10-11'),
+(101, 503, '2024-10-12'),
+(101, 504, '2024-10-14'),
+
+(102, 510, '2024-10-09'),
+(102, 511, '2024-10-13'),
+
+(103, 505, '2024-09-30'),
+(103, 506, '2024-10-14'),
+
+(104, 519, '2024-09-25'),
+
+(105, 507, '2024-10-05'),
+(105, 508, '2024-10-16'),
+
+(106, 509, '2024-10-02'),
+(106, 510, '2024-10-17'),
+(106, 511, '2024-10-18');
+
+INSERT INTO Reviews (UserID, SongID, Rating, ReviewText, ReviewDate) VALUES
+(101, 501, 5, 'Absolutely loved it!', '2024-10-12'),
+(102, 510, 4, 'Great vibe, enjoyed it a lot.', '2024-09-30'),
+(103, 505, 5, 'Amazing song, on repeat!', '2024-09-25'),
+(104, 519, 3, 'Not bad, but could be better.', '2024-09-20'),
+(105, 507, 4, 'Very smooth and relaxing.', '2024-10-05'),
+(106, 509, 5, 'Incredible energy!', '2024-10-02');
+
+--Find the user who has added the most songs to their favorites.
+SELECT Username, COUNT(SongID) AS TotalFavorites 
+FROM Users 
+JOIN Favorites ON Users.UserID = Favorites.UserID 
+GROUP BY Username 
+ORDER BY TotalFavorites DESC 
+LIMIT 1;
+
+--List the names of all artists who don’t have any songs in the database.
+SELECT ArtistName 
+FROM Artists 
+WHERE ArtistID NOT IN (SELECT ArtistID FROM Songs);
+
+--Calculate the average rating of each album and list albums with an average rating greater than 4.
+SELECT AlbumName, AVG(Rating) AS AvgRating 
+FROM Albums 
+JOIN Songs ON Albums.AlbumID = Songs.AlbumID 
+JOIN Reviews ON Songs.SongID = Reviews.SongID 
+GROUP BY AlbumName 
+HAVING AVG(Rating) > 4;
+
+--Retrieve the song that has the shortest duration in the entire database.
+SELECT Title, Duration 
+FROM Songs 
+WHERE Duration = (SELECT MIN(Duration) FROM Songs);
+
+--Get the total number of unique songs across all playlists.
+SELECT COUNT(DISTINCT SongID) AS TotalUniqueSongs 
+FROM Playlist_Songs;
+
+--Find all albums that have at least 5 songs.
+SELECT AlbumName 
+FROM Albums 
+JOIN Songs ON Albums.AlbumID = Songs.AlbumID 
+GROUP BY AlbumName 
+HAVING COUNT(SongID) >= 5;
+
+--List the top 5 most recent reviews along with the username and song title.
+SELECT Username, Title, ReviewText, ReviewDate
+FROM Reviews 
+JOIN Users ON Reviews.UserID = Users.UserID 
+JOIN Songs ON Reviews.SongID = Songs.SongID 
+ORDER BY ReviewDate DESC 
+LIMIT 5;
+
+--Find how many users have a subscription of each type (e.g., Free, Premium, etc.).
+SELECT SubscriptionType, COUNT(UserID) AS TotalUsers 
+FROM Users 
+GROUP BY SubscriptionType;
+
+--Get the details of all songs that are in the "Workout Hits" playlist.
+SELECT Title, ArtistName, AlbumName 
+FROM Songs 
+JOIN Playlist_Songs ON Songs.SongID = Playlist_Songs.SongID 
+JOIN Playlists ON Playlist_Songs.PlaylistID = Playlists.PlaylistID 
+JOIN Artists ON Songs.ArtistID = Artists.ArtistID 
+JOIN Albums ON Songs.AlbumID = Albums.AlbumID 
+WHERE PlaylistName = 'Workout Hits';
+
+--Calculate the percentage of songs in the "Pop" genre out of the total number of songs in the database.
+SELECT 
+  (SELECT COUNT(*) FROM Songs WHERE GenreID = (SELECT GenreID FROM Genres WHERE GenreName = 'Pop')) * 100.0 / COUNT(*) AS PopPercentage 
+FROM Songs;
+
+--Find Users Without Any Playlists
+SELECT Username
+FROM Users
+LEFT JOIN Playlists ON Users.UserID = Playlists.UserID
+WHERE Playlists.UserID IS NULL;
+
+--List all users who have created playlists.
+SELECT DISTINCT u.Username
+FROM Users u
+JOIN Playlists p ON u.UserID = p.UserID;
+
+-- Find the total number of songs in each genre.
+SELECT g.GenreName, COUNT(s.SongID) AS SongCount
+FROM Genres g
+LEFT JOIN Songs s ON g.GenreID = s.GenreID
+GROUP BY g.GenreID, g.GenreName;
+
+--List the top 5 most favorited songs.
+SELECT s.Title, COUNT(f.SongID) AS FavoriteCount
+FROM Songs s
+JOIN Favorites f ON s.SongID = f.SongID
+GROUP BY s.SongID, s.Title
+ORDER BY FavoriteCount DESC
+LIMIT 5;
+
+--game
+SELECT PlaylistName 
+FROM Playlists 
+WHERE DateCreated = '2024-10-01';
+
+SELECT ArtistName 
+FROM Artists 
+WHERE Country = 'Ireland';
+
+SELECT a.AlbumName, ar.ArtistName 
+FROM Albums a
+JOIN Artists ar ON a.ArtistID = ar.ArtistID
+WHERE a.ReleaseYear = 2020;
+
+SELECT g.GenreName 
+FROM Songs s
+JOIN Genres g ON s.GenreID = g.GenreID
+WHERE s.Title = 'Levitating';
+
+select * from songs;
+
+select * from Users;
+
+-- sub-queries
+--Find users who have rated any song with the highest rating (5 stars):
+SELECT Username
+FROM Users
+WHERE UserID IN (
+    SELECT UserID
+    FROM Reviews
+    WHERE Rating = 5
+);
+
+--Get the names of users who have at least one playlist created in the year 2023:
+SELECT Username
+FROM Users
+WHERE UserID IN (
+    SELECT UserID
+    FROM Playlists
+    WHERE EXTRACT(YEAR FROM DateCreated) = 2023
+);
+
+--List the names of artists who have at least one album released after 2019:
+SELECT ArtistName
+FROM Artists
+WHERE ArtistID IN (
+    SELECT ArtistID
+    FROM Albums
+    WHERE ReleaseYear > 2019
+);
+
+--Find songs that have been added as favorites by more than one user:
+SELECT Title
+FROM Songs
+WHERE SongID IN (
+    SELECT SongID
+    FROM Favorites
+    GROUP BY SongID
+    HAVING COUNT(UserID) > 1
+);
+
+--Find the most recent song added to each user's favorites list:
+SELECT UserID, SongID, DateAdded
+FROM Favorites f1
+WHERE DateAdded = (
+    SELECT MAX(DateAdded)
+    FROM Favorites f2
+    WHERE f1.UserID = f2.UserID
+);
+
+--List songs that were reviewed but not favorited by any user:
+SELECT Title
+FROM Songs
+WHERE SongID IN (
+    SELECT SongID
+    FROM Reviews
+) AND SongID NOT IN (
+    SELECT SongID
+    FROM Favorites
+);
+
+--Retrieve names of playlists that have more than 10 songs:
+SELECT PlaylistName
+FROM Playlists
+WHERE PlaylistID IN (
+    SELECT PlaylistID
+    FROM Playlist_Songs
+    GROUP BY PlaylistID
+    HAVING COUNT(SongID) > 2
+);
+
+select * from playlists;
+select * from playlist_songs;
+
+--Get a list of users who have listened to songs by a specific artist (e.g., 'Adele') at least once:
+SELECT Username
+FROM Users
+WHERE UserID IN (
+    SELECT UserID
+    FROM ListeningHistory
+    WHERE SongID IN (
+        SELECT SongID
+        FROM Songs
+        WHERE ArtistID = (SELECT ArtistID FROM Artists WHERE ArtistName = 'Adele')
+    )
+);
+
+--Retrieve playlist names that contain at least one song of a specific genre (e.g., 'Pop'):0
+SELECT PlaylistName
+FROM Playlists
+WHERE PlaylistID IN (
+    SELECT PlaylistID
+    FROM Playlist_Songs
+    WHERE SongID IN (
+        SELECT SongID
+        FROM Songs
+        WHERE GenreID = (SELECT GenreID FROM Genres WHERE GenreName = 'Pop')
+    )
+);
+
+--joins
+--List Songs with Their Album and Artist Names
+SELECT s.title, al.AlbumName, ar.ArtistName
+FROM Songs s
+JOIN Albums al ON s.AlbumID = al.AlbumID
+JOIN Artists ar ON al.ArtistID = ar.ArtistID;
+
+--List All Playlists with Their Songs
+SELECT p.PlaylistName, s.title
+FROM Playlists p
+JOIN Playlist_Songs ps ON p.PlaylistID = ps.PlaylistID
+JOIN Songs s ON ps.SongID = s.SongID;
+
+--List Each User's Favorite Songs
+SELECT u.UserName, s.title
+FROM Users u
+JOIN Favorites f ON u.UserID = f.UserID
+JOIN Songs s ON f.SongID = s.SongID;
+
+ --Retrieve Rating with User and Song Details
+SELECT u.UserName, s.Title, re.Rating
+FROM reviews re
+JOIN Users u ON re.UserID = u.UserID
+JOIN Songs s ON re.SongID = s.SongID;
+
+-- Show complete song information
+SELECT s.Title, a.ArtistName, al.AlbumName, g.GenreName
+FROM Songs s
+JOIN Artists a ON s.ArtistID = a.ArtistID
+JOIN Albums al ON s.AlbumID = al.AlbumID
+JOIN Genres g ON s.GenreID = g.GenreID;
+
+--List Users with Their Created Playlists
+SELECT u.UserName, p.PlaylistName
+FROM Users u
+JOIN User_Playlist up ON u.UserID = up.UserID
+JOIN Playlists p ON up.PlaylistID = p.PlaylistID;
+
+--Constraints and Complex Queries
+
+
